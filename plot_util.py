@@ -59,5 +59,3 @@ def plot_util(control_file, expr_file, timeseries = None, var_name = "", lat = N
 			os.system("rm concat.cdf")
 		else:
 			print(var_name + " not in both control and experimental datasets.")
-
-plot_util("/work2/noaa/nems/sshyam/comparisons/base/sfcf024.nc", "/work2/noaa/nems/sshyam/comparisons/noise3/sfcf024.nc", var_name = "ugrd10m")
