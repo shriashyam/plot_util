@@ -37,33 +37,20 @@ def plot_util(control_file, expr_file, timeseries = None, var_name = "", lat = N
 		if var_name in common_vars:
 			# check if latitude and longitude in both datasets, else return with error message
 			if "lat" in common_vars and "lon" in common_vars:
-				# control graph
-				fig = plt.figure()
-				ax = plt.axes(projection=ccrs.PlateCarree())
-				plt.contourf(control_ds["lon"], control_ds["lat"], np.squeeze(control_ds[var_name]), transform = ccrs.PlateCarree())
-				ax.add_feature(cfeature.COASTLINE)				
-				cbar = plt.colorbar()
-				cbar.set_label(var_name)
-				plt.title("Control " + var_name)
-				plt.savefig(var_name + 'control.png')
-				# expr graph
-				fig = plt.figure()
-				ax = plt.axes(projection=ccrs.PlateCarree())
-				plt.contourf(expr_ds["lon"], expr_ds["lat"], np.squeeze(expr_ds[var_name]), transform = ccrs.PlateCarree())
-				ax.add_feature(cfeature.COASTLINE)
-				cbar = plt.colorbar()
-				cbar.set_label(var_name)
-				plt.title("Experimental " + var_name)
-				plt.savefig(var_name + 'expr.png')
-				#difference graph
-				fig = plt.figure()
-				ax = plt.axes(projection=ccrs.PlateCarree())
-				plt.contourf(control_ds["lon"], control_ds["lat"], np.squeeze(expr_ds[var_name]-control_ds[var_name]), transform = ccrs.PlateCarree())
-				ax.add_feature(cfeature.COASTLINE)
-				cbar = plt.colorbar()
-				cbar.set_label(var_name)
-				plt.title("Difference (experimental - control) " + var_name)
-				plt.savefig(var_name + 'difference.png')	
+				#setup
+				data = np.array([np.squeeze(control_ds[var_name]), np.squeeze(expr_ds[var_name]), np.squeeze(expr_ds[var_name]-control_ds[var_name])])
+				titles = np.array(["Control", "Experimental", "Difference"])
+				for i in range(3):
+					fig = plt.figure()
+					ax = plt.axes(projection=ccrs.PlateCarree())
+					plt.contourf(control_ds["lon"], control_ds["lat"], data[i, :, :], transform = ccrs.PlateCarree())
+					ax.add_feature(cfeature.COASTLINE)
+					cbar = plt.colorbar()
+					cbar.set_label(var_name)
+					plt.title(titles[i] + " " + var_name)
+					plt.savefig(var_name + titles[i] + ".png")
+
+				return
 			else:
 				print("Latitude and longitude not found in control and experimental datasets.")
 				return
