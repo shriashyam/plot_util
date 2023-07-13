@@ -60,11 +60,15 @@ def plot_util(control_file, expr_file, var_name = "", lat = None, lon = None, X 
 		if X == None or Y == None:
 			print("Provide X/Y or latitude/longitude values.")
 			return
-		plt.plot(xr.DataArray.to_numpy(control_ds["time"]),xr.DataArray.to_numpy(np.squeeze(control_ds[var_name]))[:,Y,X])
-		plt.xlabel("Time")
-		plt.ylabel(var_name)
-		plt.title("Change Over Time in " + var_name + " at Latitude " + str(round(xr.DataArray.to_numpy(control_ds["lat"])[Y,0])) + " and Longitude " + str(round(xr.DataArray.to_numpy(control_ds["lon"])[0,X])))
-		plt.savefig("line.png")
+		data = np.array([xr.DataArray.to_numpy(control_ds[var_name])[:,Y,X],xr.DataArray.to_numpy(expr_ds[var_name])[:,Y,X],xr.DataArray.to_numpy(expr_ds[var_name])[:,Y,X]-xr.DataArray.to_numpy(control_ds[var_name][:,Y,X])])
+		titles = np.array(["Control", "Experimental", "Difference"])
+		for i in range(3):
+			plt.figure()
+			plt.plot(xr.DataArray.to_numpy(control_ds["time"]),data[i,:])
+			plt.xlabel("Time")
+			plt.ylabel(var_name)
+			plt.title("Change Over Time in " + titles[i] + " " + var_name + " at Latitude " + str(round(xr.DataArray.to_numpy(control_ds["lat"])[Y,0])) + " and Longitude " + str(round(xr.DataArray.to_numpy(control_ds["lon"])[0,X])))
+			plt.savefig(var_name + titles[i] + "timeseries.png")
 		return
 plot_util("sfccat.nc", "sfccat.nc", var_name = "tmp2m", lon = 23, lat = -36)
 
