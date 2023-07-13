@@ -3,7 +3,7 @@ import xarray as xr
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
-import sys
+import numpy.ma as ma
 
 def plot_util(control_file, expr_file, var_name = "", lat = None, lon = None, X = None, Y = None):
 	
@@ -29,15 +29,15 @@ def plot_util(control_file, expr_file, var_name = "", lat = None, lon = None, X 
 		print("The following variables are found in both control and experimental datasets: ")
 		print(*common_vars,sep=', ')
 		return
-	# check if variable (var+name) is in both datasets, else return with error message
 	elif var_name not in common_vars:
+		# check if variable (var_name) is in both datasets, else return with error message
 		print(var_name + " not in both control and experimental datasets.")
 		return
 	elif len(np.squeeze(control_ds[var_name]).shape) == 2 or len(np.squeeze(expr_ds[var_name]).shape) == 2:
 		# plot_util control_file expr_file var_name: make three plots with a variable (var_name)
 		# check if latitude and longitude in both datasets, else return with error message
 		if "lat" in common_vars and "lon" in common_vars:
-			#setup
+			# make experimental, control, and difference plots
 			data = np.array([np.squeeze(control_ds[var_name]), np.squeeze(expr_ds[var_name]), np.squeeze(expr_ds[var_name]-control_ds[var_name])])
 			titles = np.array(["Control", "Experimental", "Difference"])
 			for i in range(3):
@@ -51,8 +51,22 @@ def plot_util(control_file, expr_file, var_name = "", lat = None, lon = None, X 
 				plt.savefig(var_name + titles[i] + ".png")
 			return
 		else:
+			# error message
 			print("Latitude and longitude not found in control and experimental datasets.")
 			return
 	else:
-		print("is timeseries")
-plot_util("/work2/noaa/nems/sshyam/comparisons/base/sfcf024.nc", "/work2/noaa/nems/sshyam/comparisons/noise1/sfcf024.nc", var_name = "tmp2m")
+		if not lat == None:
+			Y = np.abs(ma.getdata(control_ds["lat"][:,0])-lat).argmin()
+		if not lon == None:
+			X = np.abs(ma.getdata(control_ds["lon"][0,:])-lon).argmin()
+		if X == None or Y == None:
+			print("Provide X/Y or latitude/longitude values.")
+			return
+		vals = xr.DataArray.to_numpy(np.squeeze(control_ds[var_name]))[:,Y,X]
+		plt.plot(xr.DataArray.to_numpy(control_ds["time"]),vals)
+		plt.xlabel("Time")
+		plt.ylabel(var_name)
+		plt.title("Change Over Time in " + var_name + " at Latitude " + str(round(xr.DataArray.to_numpy(control_ds["lat"])[Y,0])) + " and Longitude " + str(round(xr.DataArray.to_numpy(control_ds["lon"])[0,X])))
+		plt.savefig("line.png")
+		return
+plot_util("sfccat.nc", "sfccat.nc", var_name = "tmp2m", X = 2, lat = 36)
