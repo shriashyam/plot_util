@@ -21,6 +21,7 @@ def plot_map(control_ds, expr_ds, var_name):
 	return
 
 def plot_timeseries(control_ds, expr_ds, var_name, X, Y):
+	# plot_util control_file expr_file var_name X Y: make three plots (experimental, control, and difference) line plots of change in var_name over timeseries
 	data = np.array([xr.DataArray.to_numpy(control_ds[var_name])[:,Y,X],xr.DataArray.to_numpy(expr_ds[var_name])[:,Y,X],xr.DataArray.to_numpy(expr_ds[var_name])[:,Y,X]-xr.DataArray.to_numpy(control_ds[var_name][:,Y,X])])
 	titles = np.array(["Control", "Experimental", "Difference"])
 	for i in range(3):
@@ -70,13 +71,16 @@ def plot_util(control_file, expr_file, var_name = "", lat = None, lon = None, X 
 		plot_map(control_ds, expr_ds, var_name)
 		return
 	else:
+		# find x and y based on latitude and longitude
 		if not lat == None:
 			Y = np.abs(ma.getdata(control_ds["lat"][:,0])-lat).argmin()
 		if not lon == None:
 			X = np.abs(ma.getdata(control_ds["lon"][0,:])-lon).argmin()
+		# check for x and y coordinates
 		if X == None or Y == None:
 			print("Provide X/Y or latitude/longitude values.")
 			return
+		# make lineplot of change in var_name over timeseries in control, experimental, and difference
 		plot_timeseries(control_ds, expr_ds, var_name, X, Y)
 		return
 
